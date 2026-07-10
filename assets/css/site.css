@@ -44,7 +44,7 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
   padding: 0 20px;
 }
 .header .mainbar .container-fluid {
-  display: flex; align-items: center; gap: 24px; flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; flex: 1 1 auto; min-width: 0;
 }
 .header .main_nav_wrapper { position: static !important; transform: none !important; height: auto !important; }
 .header nav.primary_nav { display: inline-block !important; }
@@ -85,7 +85,10 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
    once initialised. We never run that plugin. */
 #head_panel_slider.owl-carousel { display: block !important; position: relative; height: 100%; }
 #head_panel_slider .stretchy_wrapper.ratio_slider {
-  position: absolute;
+  /* the theme's own .stretchy_wrapper{position:relative !important} (plethora-style.css)
+     otherwise wins on !important + source order, leaving every non-active slide in
+     normal flow -- stacked below the carousel instead of layered inside it. */
+  position: absolute !important;
   inset: 0;
   opacity: 0;
   visibility: hidden;
@@ -110,7 +113,11 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
 @media only screen and (min-width: 768px) { .head_panel .slider_wrapper { height: 480px; } }
 @media only screen and (min-width: 992px) { .head_panel .slider_wrapper { height: 560px; } }
 @media only screen and (min-width: 1200px) { .head_panel .slider_wrapper { height: 620px; } }
-.owl-prev, .owl-next {
+/* scoped under .slider_wrapper (specificity 0,2,0) to beat the theme's generic
+   button reset -- plethora-style.css's `button:not([class*="btn-"])` (0,1,1) was
+   painting a grey box behind the icon and knocking position back to static/relative,
+   which is what pushed .owl-next out of the carousel entirely (see FIX 2 above). */
+.slider_wrapper .owl-prev, .slider_wrapper .owl-next {
   position: absolute; top: 50%; z-index: 11;
   width: 44px; height: 50px;
   transform: translateY(-50%);
@@ -119,21 +126,23 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
   color: #fff; opacity: 0.55;
   transition: opacity 200ms ease;
 }
-.owl-prev { left: 6px; }
-.owl-next { right: 6px; }
-.owl-prev:hover, .owl-next:hover { opacity: 1; }
-.owl-prev svg, .owl-next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.slider_wrapper .owl-prev { left: 6px; }
+.slider_wrapper .owl-next { right: 6px; }
+.slider_wrapper .owl-prev:hover, .slider_wrapper .owl-next:hover { opacity: 1; }
+.slider_wrapper .owl-prev svg, .slider_wrapper .owl-next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
 
 /* ---------- in-page image galleries (vanilla-JS crossfade, replaces flexslider) ---------- */
-.gallery { position: relative; width: 100%; overflow: hidden; }
+/* height comes from an inline style per call site (build.py passes the page's
+   tallest copy-box height so the image column matches it -- see FIX 5) with a
+   420px fallback if one is ever omitted. Every slide is layered via
+   position:absolute so the gallery's own height never depends on which image
+   is first. */
+.gallery { position: relative; width: 100%; height: 420px; overflow: hidden; }
 .gallery img.gallery__img {
-  display: block; width: 100%; height: auto; object-fit: cover;
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0;
   opacity: 0; transition: opacity 700ms ease;
 }
-/* the first image stays in normal flow so its aspect ratio gives the
-   gallery a real height; every other image stacks on top of that box */
-.gallery img.gallery__img:first-child { position: relative; }
-.gallery img.gallery__img:not(:first-child) { position: absolute; inset: 0; height: 100%; }
 .gallery img.gallery__img.is-active { opacity: 1; }
 .gallery__dots {
   position: absolute; bottom: 20px; left: 0; right: 0;
@@ -146,6 +155,18 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
 .gallery__dots button.is-active { background: #fff; }
 .vc_column-inner.vc_col-has-fill,
 .wpb_column.vc_col-has-fill .vc_column-inner { position: relative; overflow: hidden; }
+
+/* ---------- equal-height copy boxes (alternating image/text rows) ---------- */
+/* build.py passes each row's box-height match (image and text side both get the
+   same inline min-height, sized to the tallest copy box on that page) as an
+   inline style. This just centres the title+paragraphs in whatever extra room
+   that leaves, instead of leaving it stranded at the bottom. */
+.boxed_plus { display: flex; flex-direction: column; justify-content: center; }
+/* the grid only goes side-by-side at 768px+ (vc-composer.css); below that,
+   reset the matched heights so mobile keeps its natural, stacked heights. */
+@media (max-width: 767px) {
+  .boxed_plus, .vc_column-inner.vc_col-has-fill, .gallery { min-height: auto !important; height: auto !important; }
+}
 
 /* ---------- contact sidebar header row (CONTACT / close) ---------- */
 .secondary_nav_widgetized_area .sidebar_header_row {
@@ -162,6 +183,23 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
 }
 .secondary_nav_widgetized_area .sidebar_close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
 .secondary_nav_widgetized_area aside.aboutus-widget { margin-top: 10px; }
+/* body sets -webkit-font-smoothing:antialiased sitewide, which thins white text
+   on Chromium/WebKit; on the sidebar's small white-on-black paragraph that reads
+   as soft/blurry rather than crisp. Restore normal smoothing here only. */
+.secondary_nav_widgetized_area { -webkit-font-smoothing: auto; }
+/* the theme's global font-weight:200 (inherited from plethora-style.css's body
+   rule) is thin enough everywhere that it is only ever legible at heading sizes
+   or on a light background. At this paragraph's small size, white-on-black, that
+   hairline weight reads as soft/blurry rather than crisp: light strokes on a dark
+   ground need real weight to render clean, not just more size. */
+.secondary_nav_widgetized_area .pl_about_us_widget > p > small { font-size: 15px; font-weight: 400; }
+/* hanging indent: the address wraps to two lines; without this the icon (an
+   inline sibling) is not a layout column, so the wrapped line falls back to the
+   paragraph's own left edge, under the icon. Flex makes the icon a fixed-width
+   column so wrapped lines stay inside the text column, under "Gang Gurita". */
+.contact_detail { display: flex; align-items: flex-start; }
+.contact_detail i.icon { flex: 0 0 auto; }
+.contact_detail span { flex: 1 1 auto; }
 
 /* the real theme's header carries z-index:10; both the backdrop and the
    sidebar itself must sit above that or the sidebar's own controls become
@@ -189,7 +227,8 @@ body.nav_open { overflow: hidden; }
 #return-to-top {
   position: fixed; right: 26px; bottom: 26px; z-index: 6;
   width: 44px; height: 44px; border-radius: 50%;
-  background: #171720; color: #fff;
+  background: #fff; color: #171720;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   display: flex; align-items: center; justify-content: center;
   text-decoration: none; opacity: 0; visibility: hidden;
   transition: opacity .25s ease, visibility .25s ease;
