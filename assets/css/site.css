@@ -46,6 +46,12 @@ a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
 .header .mainbar .container-fluid {
   display: flex; align-items: center; justify-content: space-between; gap: 24px; flex: 1 1 auto; min-width: 0;
 }
+/* plethora-style.css's bootstrap clearfix (.container-fluid:before/:after,
+   content:" "; display:table) becomes two extra flex items once the
+   container above is flexed, so space-between splits into 3 gaps instead
+   of 1 and shoves the logo ~224px right of the left edge. Kill them. */
+.header .mainbar .container-fluid::before,
+.header .mainbar .container-fluid::after { content: none; display: none; }
 .header .main_nav_wrapper { position: static !important; transform: none !important; height: auto !important; }
 .header nav.primary_nav { display: inline-block !important; }
 .header .toggler_and_tools { position: static !important; transform: none !important; padding-left: 0; flex: 0 0 auto; }
@@ -239,3 +245,11 @@ body.nav_open { overflow: hidden; }
 .menu-toggler { text-decoration: none; }
 .hoverbox a { text-decoration: none; color: inherit; }
 .wpb_gallery_slides { height: 100%; }
+
+/* the alternating image/copy rows (bg_panel / content_panel on the
+   Location, Services and Umah di Bali pages) share one fixed box_h per
+   page (FIX 5) so they now sit edge-to-edge with no gap. Give consecutive
+   rows breathing room; leaves the equal box_h heights untouched. */
+.vc_row.vc_row-no-padding.vc_row-flex + .vc_row.vc_row-no-padding.vc_row-flex {
+  margin-top: 48px;
+}
