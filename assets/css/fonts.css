@@ -1,0 +1,17 @@
+/* Self-hosted, latin subset. Playfair Display + Source Sans 3 (successor to
+   Source Sans Pro, same metrics/design, current Google Fonts family for this
+   pairing). Both are variable fonts covering weights 400-900 in one file. */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/playfair-display-variable-latin.woff2') format('woff2-variations'), url('../fonts/playfair-display-variable-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/source-sans-3-variable-latin.woff2') format('woff2-variations'), url('../fonts/source-sans-3-variable-latin.woff2') format('woff2');
+}

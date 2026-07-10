@@ -1,0 +1,202 @@
+/* umah di bali -- additive site CSS.
+   The real Hotel Xenia / WPBakery theme CSS (plethora-style.css,
+   vc-composer.css, owl-carousel.css, owl-theme-default.css) does the heavy
+   lifting. This file only adds what those files do not cover: self-hosted
+   font loading, the hand-authored SVG icon set (replacing Font Awesome,
+   which was not part of the clean capture), the vanilla-JS hero carousel
+   and in-page gallery crossfades, and the contact-sidebar header row that
+   the original renders via theme JS we do not trust or ship. */
+
+@import url("fonts.css");
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; }
+a { cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+/* ---------- hand-authored icon set (replaces Font Awesome) ---------- */
+i.icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: normal !important;
+}
+i.icon svg { width: 16px; height: 16px; fill: currentColor; display: block; }
+.contact_detail i.icon svg,
+.pl_about_us_widget p.social i.icon svg { width: 16px; height: 16px; }
+a.back-to-top-link { display: inline-flex; align-items: center; justify-content: center; }
+a.back-to-top-link svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* the real primary_nav ships visibility:hidden and is only flipped visible
+   by theme JS we do not run (a FOUC guard while webfonts/owl.carousel
+   load). We load nothing async that would cause a flash, so show it
+   immediately. */
+.header nav.primary_nav { visibility: visible !important; }
+
+/* the real theme picks logo/nav/toggler positioning (absolute vs inline,
+   left vs centered) from a Redux theme-option class on <body> we do not
+   have. Lay the three out with flexbox instead: same left-logo,
+   right-nav-plus-toggler result as the reference screenshots, immune to
+   content-width collisions. */
+.header .mainbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 0 20px;
+}
+.header .mainbar .container-fluid {
+  display: flex; align-items: center; gap: 24px; flex: 1 1 auto; min-width: 0;
+}
+.header .main_nav_wrapper { position: static !important; transform: none !important; height: auto !important; }
+.header nav.primary_nav { display: inline-block !important; }
+.header .toggler_and_tools { position: static !important; transform: none !important; padding-left: 0; flex: 0 0 auto; }
+.header .logo { flex: 0 0 auto; }
+/* span.lines is absolutely positioned against the nearest positioned
+   ancestor; that used to be .toggler_and_tools (position:absolute in the
+   real theme). Now that we've made .toggler_and_tools static for the flex
+   layout, .menu-toggler itself must take over as that containing block. */
+.header .menu-toggler { position: relative; }
+/* the real theme's own JS config switches the inline nav to a hamburger
+   under 991px (themeConfig.GENERAL.menu_switch_to_mobile). We do not run
+   that JS, so enforce the same breakpoint in CSS: below it, only the logo
+   and the CONTACT/hamburger toggler show in the header, and the same
+   links are reachable from the slide-in panel instead (see
+   .secondary_nav_widgetized_area nav below). */
+@media (max-width: 991px) {
+  .header .main_nav_wrapper { display: none !important; }
+}
+/* the sidebar's own nav (real theme markup + CSS: .secondary_nav_widgetized_area
+   nav ul li a) stands in for the header nav once it is hidden below 991px. */
+.mobile_nav_widget { display: none; }
+@media (max-width: 991px) {
+  .mobile_nav_widget { display: block; margin: 0 30px 24px; }
+}
+/* same "Contact" -> "Menu" swap the header toggler does at 991px, applied
+   to the sidebar's own header row label. */
+.sidebar_header_label .below_threshold { display: none; }
+@media (max-width: 991px) {
+  .sidebar_header_label .above_threshold { display: none; }
+  .sidebar_header_label .below_threshold { display: inline; }
+}
+
+/* ---------- hero carousel (vanilla-JS crossfade, replaces owl.carousel) ---------- */
+.head_panel .slider_wrapper { position: relative; height: 400px; }
+/* owl-carousel.css (the vendored library stylesheet) ships .owl-carousel
+   {display:none}, only flipped to display:block by owl.carousel's own JS
+   once initialised. We never run that plugin. */
+#head_panel_slider.owl-carousel { display: block !important; position: relative; height: 100%; }
+#head_panel_slider .stretchy_wrapper.ratio_slider {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 900ms ease;
+  height: 100%;
+  padding-bottom: 0 !important;
+}
+#head_panel_slider .stretchy_wrapper.ratio_slider.is-active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+}
+/* .item ships display:none by default -- an owl.carousel v1 leftover the
+   real theme's JS overrides per-slide. We show every slide's image and let
+   the wrapper above handle which one is visible. */
+#head_panel_slider .item {
+  display: block; height: 100%;
+  background-size: cover; background-position: center center; background-repeat: no-repeat;
+}
+#head_panel_slider .item .container { height: 100%; display: flex; align-items: center; }
+@media only screen and (min-width: 480px) { .head_panel .slider_wrapper { height: 400px; } }
+@media only screen and (min-width: 768px) { .head_panel .slider_wrapper { height: 480px; } }
+@media only screen and (min-width: 992px) { .head_panel .slider_wrapper { height: 560px; } }
+@media only screen and (min-width: 1200px) { .head_panel .slider_wrapper { height: 620px; } }
+.owl-prev, .owl-next {
+  position: absolute; top: 50%; z-index: 11;
+  width: 44px; height: 50px;
+  transform: translateY(-50%);
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; padding: 0; cursor: pointer;
+  color: #fff; opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+.owl-prev { left: 6px; }
+.owl-next { right: 6px; }
+.owl-prev:hover, .owl-next:hover { opacity: 1; }
+.owl-prev svg, .owl-next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+
+/* ---------- in-page image galleries (vanilla-JS crossfade, replaces flexslider) ---------- */
+.gallery { position: relative; width: 100%; overflow: hidden; }
+.gallery img.gallery__img {
+  display: block; width: 100%; height: auto; object-fit: cover;
+  opacity: 0; transition: opacity 700ms ease;
+}
+/* the first image stays in normal flow so its aspect ratio gives the
+   gallery a real height; every other image stacks on top of that box */
+.gallery img.gallery__img:first-child { position: relative; }
+.gallery img.gallery__img:not(:first-child) { position: absolute; inset: 0; height: 100%; }
+.gallery img.gallery__img.is-active { opacity: 1; }
+.gallery__dots {
+  position: absolute; bottom: 20px; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; z-index: 2;
+}
+.gallery__dots button {
+  width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0;
+  background: rgba(255,255,255,0.55); cursor: pointer;
+}
+.gallery__dots button.is-active { background: #fff; }
+.vc_column-inner.vc_col-has-fill,
+.wpb_column.vc_col-has-fill .vc_column-inner { position: relative; overflow: hidden; }
+
+/* ---------- contact sidebar header row (CONTACT / close) ---------- */
+.secondary_nav_widgetized_area .sidebar_header_row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 26px 30px 10px;
+}
+.secondary_nav_widgetized_area .sidebar_header_row .sidebar_header_label {
+  color: #fff; font-family: 'Source Sans Pro', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+}
+.secondary_nav_widgetized_area .sidebar_close {
+  background: transparent; border: 0; padding: 6px; cursor: pointer; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.secondary_nav_widgetized_area .sidebar_close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.secondary_nav_widgetized_area aside.aboutus-widget { margin-top: 10px; }
+
+/* the real theme's header carries z-index:10; both the backdrop and the
+   sidebar itself must sit above that or the sidebar's own controls become
+   unclickable behind the full-width header bar. */
+.secondary_nav_widgetized_area { z-index: 11; }
+.sidebar_backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  z-index: 10; opacity: 0; visibility: hidden; transition: opacity .2s ease-in-out;
+}
+.sidebar_backdrop.is-open { opacity: 1; visibility: visible; }
+body.nav_open { overflow: hidden; }
+
+/* ---------- massage CTA button (dark navy, matches reference) ---------- */
+.plethora_button .btn.btn-inv.btn-default {
+  display: inline-block; margin-top: 18px; padding: 13px 26px;
+  background: #3e445d; color: #fff; text-decoration: none;
+  font-family: 'Source Sans Pro', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; border: 1px solid #3e445d;
+  transition: background 200ms ease, color 200ms ease;
+}
+.plethora_button .btn.btn-inv.btn-default:hover { background: transparent; color: #3e445d; }
+
+/* ---------- footer back-to-top ---------- */
+.footer { position: relative; }
+#return-to-top {
+  position: fixed; right: 26px; bottom: 26px; z-index: 6;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #171720; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; opacity: 0; visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+}
+#return-to-top.is-visible { opacity: 1; visibility: visible; }
+
+/* ---------- misc corrections for a no-WordPress static build ---------- */
+.menu-toggler { text-decoration: none; }
+.hoverbox a { text-decoration: none; color: inherit; }
+.wpb_gallery_slides { height: 100%; }
